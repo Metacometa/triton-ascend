@@ -46,23 +46,34 @@ void ComputeBlockOptPass::runOnOperation() {
      unified block. Then, use UBUsageOpt to find the smallest UB dependency
      location and divide the computation blocks.
    */
+  llvm::errs() << "[PlanComputeBlock]\n";
+  llvm::errs() << "[1] before createReorderOpsByBlockIdPass\n";
+
   pm.addPass(createUnifyAllocBlockPass());
   pm.addPass(createReorderOpsByBlockIdPass());
 
+  llvm::errs() << "[2] before createReorderOpsByBlockIdPass\n";
   pm.addPass(createMergeVectorIfBlockPass());
   pm.addPass(createReorderOpsByBlockIdPass());
+
+  llvm::errs() << "[3] before createReorderOpsByBlockIdPass\n";
 
   pm.addPass(createUnifyStoreBlockPass());
 
   pm.addPass(createMergeCubeForBlockPass());
   pm.addPass(createReorderOpsByBlockIdPass());
 
+  llvm::errs() << "[4] before createReorderOpsByBlockIdPass\n";
+
   pm.addPass(createUBUsageOptPass());
   pm.addPass(createMergeSameSourceAxisPass());
   pm.addPass(createReorderOpsByBlockIdPass());
 
+  llvm::errs() << "[5] before createReorderOpsByBlockIdPass\n";
+
   pm.addPass(createFixpipeOptPass());
   pm.addPass(createReorderOpsByBlockIdPass());
+  llvm::errs() << "[PlanComputeBlock END]\n";
 
   if (failed(runPipeline(pm, module))) {
     if (!CVPipeline::hasFallbackAttr(module)) {

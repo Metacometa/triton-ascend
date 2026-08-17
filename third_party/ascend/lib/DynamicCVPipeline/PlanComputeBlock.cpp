@@ -60,10 +60,8 @@ void PlanComputeBlockPass::runOnOperation() {
   // Step 3: Partition compute blocks for core_type=vector
   pm.addPass(createPlanVectorBlockPass());
 
-  llvm::errs() << "[PlanComputeBlock] before createReorderOpsByBlockIdPass\n";
   // Step 4: Reorder
   pm.addPass(createReorderOpsByBlockIdPass());
-  llvm::errs() << "[PlanComputeBlock] after createReorderOpsByBlockIdPass\n";
 
   if (failed(runPipeline(pm, module))) {
     if (!CVPipeline::hasFallbackAttr(module)) {
