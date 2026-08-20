@@ -42,24 +42,8 @@
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/Pass/Pass.h"
 
-#define GEN_PASS_DECL_DEBUGPRINT
-#include "ascend/include/DynamicCVPipeline/Passes.h.inc"
-
-#define GEN_PASS_DEF_DEBUGPRINT
-#include "ascend/include/DynamicCVPipeline/Passes.h.inc"
-
 namespace mlir {
 namespace triton {
-
-/// Options for the DebugPrint pass.
-struct DebugPrintOptions {
-  /// The message to be printed when the pass is executed.
-  std::string message;
-  
-  DebugPrintOptions() : message("") {}
-  DebugPrintOptions(const std::string &msg) : message(msg) {}
-};
-
 /// Creates an instance of the DebugPrint pass.
 /// \param message The message to print when the pass runs.
 std::unique_ptr<OperationPass<ModuleOp>>
