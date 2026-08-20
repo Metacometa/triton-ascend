@@ -26,6 +26,7 @@
 #include "ascend/include/DynamicCVPipeline/SplitDataflow/DataDependencyAnalysis.h"
 #include "ascend/include/DynamicCVPipeline/SplitDataflow/InterCoreTransferAndSync.h"
 #include "ascend/include/DynamicCVPipeline/SplitDataflow/MarkMainLoop.h"
+#include "ascend/include/DynamicCVPipeline/DebugPrint.h"
 #include "ascend/include/DynamicCVPipeline/SplitDataflow/PreserveControlAttrsCanonicalize.h"
 #include "ascend/include/DynamicCVPipeline/SplitDataflow/RefineArgsBlockId.h"
 #include "ascend/include/DynamicCVPipeline/SplitDataflow/SeparateCVScope.h"
@@ -53,27 +54,36 @@ void SplitDataflowPass::runOnOperation() {
   OpPassManager pm(module.getOperationName());
   LDBG("Enter pass.");
 
+  pm.addPass(createDebugPrintPass("Before AddBlockIdForControlOps Pass"));
   // Step 1: Add block_id for control flow operations
   pm.addPass(createAddBlockIdForControlOpsPass());
 
+  pm.addPass(createDebugPrintPass("Before DataDependencyAnalysis Pass"));
   // Step 2: Analyze data dependencies between Vector and Cube blocks
   pm.addPass(createDataDependencyAnalysisPass());
 
+  pm.addPass(createDebugPrintPass("Before InterCoreTransferAndSync Pass"));
   // Step 3: Run InterCoreTransferAndSync
   pm.addPass(createInterCoreTransferAndSyncPass());
 
+  pm.addPass(createDebugPrintPass("Before MarkMainLoop Pass"));
   // Step 4: Mark the main computation loop
   pm.addPass(createMarkMainLoopPass());
 
+  pm.addPass(createDebugPrintPass("Before SeparateCVScope Pass"));
   // Step 5: Run SeparateCVScope
   pm.addPass(createSeparateCVScopePass());
 
+  pm.addPass(createDebugPrintPass("Before PreserveControlAttrsCanonicalize Pass"));
   // Step 6: Canonicalize to preserve control flow attributes
   pm.addPass(createPreserveControlAttrsCanonicalizePass());
 
+  pm.addPass(createDebugPrintPass("Before RefineArgsBlockId Pass"));
   // Step 7: Refine block id for iteration variables in main loops
   pm.addPass(createRefineArgsBlockIdPass());
+  pm.addPass(createDebugPrintPass("Before ReorderOpsByBlockId Pass"));
   pm.addPass(createReorderOpsByBlockIdPass());
+  pm.addPass(createDebugPrintPass("After ReorderOpsByBlockId Pass"));
 
   if (failed(runPipeline(pm, module))) {
     if (!CVPipeline::hasFallbackAttr(module)) {
