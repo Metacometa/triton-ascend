@@ -81,6 +81,9 @@ FailureOr<llvm::DenseSet<int>> MainLoopUnrollPass::probeMainLoops(
   // that ends up carrying the inter core transfers, so it can only be found
   // once those transfers have been inserted.
   PassManager pm(module.getContext(), module.getOperationName());
+  pm.addPass(createPlanComputeBlockPass());
+  pm.addPass(createComputeBlockOptPass());
+
   pm.addPass(createAddBlockIdForControlOpsPass());
   pm.addPass(createDataDependencyAnalysisPass());
   pm.addPass(createInterCoreTransferAndSyncPass());
