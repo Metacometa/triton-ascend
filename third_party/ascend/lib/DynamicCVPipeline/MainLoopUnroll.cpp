@@ -78,7 +78,15 @@ private:
 
 FailureOr<llvm::DenseSet<int>> MainLoopUnrollPass::probeMainLoops(
     ModuleOp module) {
+  MLIRContext probeCtx;
+  probeCtx.allowUnregisteredDialects();
+  probeCtx.enableMultiThreading(false);
+
+  probeCtx.appendDialectRegistry(module.getContext()->getDialectRegistry());
+  probeCtx.loadAllAvailableDialects();
+
   ModuleOp probe(module->clone());
+  probe->setContext(&probeCtx);
   auto destroyProbe = llvm::make_scope_exit([&]() { probe->destroy(); });
 
   // These are the very passes SplitDataflow runs: the main loop is the loop
