@@ -36,7 +36,6 @@
 
 #include "mlir/Parser/Parser.h"
 #include "mlir/IR/MLIRContext.h"
-#include "mlir/Parser.h"
 
 #include "ascend/include/DynamicCVPipeline/Common/Utils.h"
 #include "ascend/include/DynamicCVPipeline/MainLoopUnroll.h"
