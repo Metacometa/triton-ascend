@@ -72,14 +72,17 @@ void AddControlFlowConditionPass::runOnOperation() {
   ModuleOp module = getOperation();
 
   if (CVPipeline::hasFallbackAttr(module)) {
+    std::cout << "[VDV DEBUG] AddControlFlowCondition SKIP FALLBACK SET" << std::endl;
     return;
   }
 
   LDBG("Enter add controlflow condition pass.\n");
   LDBG("before AddControlFlowCondition:");
   LLVM_DEBUG(module.dump());
+  module.dump();
 
   if (failed(verifyControlFlowPrerequisites(module))) {
+    std::cout << "[VDV DEBUG] AddControlFlowCondition failed verifyControlFlowPrerequisites" << std::endl;
     return;
   }
 
@@ -155,6 +158,7 @@ void AddControlFlowConditionPass::runOnOperation() {
       CVPipeline::setFallbackAttr(module, CVPipeline::ERRCODE_FAILED);
     }
   }
+  std::cout << "[VDV DEBUG] AddControlFlowCondition OK" << std::endl;
 
   LDBG("Exit add controlflow condition pass.");
 }

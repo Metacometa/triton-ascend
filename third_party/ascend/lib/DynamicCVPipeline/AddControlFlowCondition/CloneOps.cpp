@@ -33,6 +33,8 @@
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/Support/Debug.h"
 
+#include <iostream>
+
 static constexpr const char *DEBUG_TYPE = "CloneOps";
 #define DBGS() (llvm::dbgs() << '[' << DEBUG_TYPE << "] ")
 #define LDBG(...)                                                              \
@@ -444,6 +446,7 @@ static bool areBlockIdsConsecutive(Block *bodyBlock) {
   for (Operation &op : bodyBlock->without_terminator()) {
     auto blockIdOpt = CVPipeline::getOpBlockId(&op);
     if (!blockIdOpt) {
+      std::cout << "[VDV DEBUG]: Op missing ssbuffer.block_id: " << op.getName().getStringRef().str() << std::endl;
       LDBG("[ERROR]: Op missing ssbuffer.block_id: " << op.getName());
       return false;
     }
@@ -462,6 +465,7 @@ static bool areBlockIdsConsecutive(Block *bodyBlock) {
 
     for (size_t k = j; k < idsInOrder.size(); ++k) {
       if (idsInOrder[k] == currentId) {
+        std::cout << "[VDV DEBUG]: block_id: " << currentId << " is interleaved" << std::endl;
         LDBG("[ERROR]: block_id: " << currentId << " is interleaved");
         return false;
       }
@@ -480,6 +484,8 @@ LogicalResult CloneOpsPass::validateBlockIdsConsecutive(ModuleOp module) {
     }
     Block *bodyBlock = MainLoop(op).getBody();
     if (!bodyBlock) {
+      std::cout << "[VDV DEBUG]: op with ssbuffer.main_loop is not a scf::ForOp or "
+           "scf::WhileOp" << std::endl;
       LDBG("[Error]: op with ssbuffer.main_loop is not a scf::ForOp or "
            "scf::WhileOp");
       return WalkResult::interrupt();
@@ -562,6 +568,7 @@ void CloneOpsPass::runOnOperation() {
 
   // Validate block_ids are consecutive before cloning
   if (failed(validateBlockIdsConsecutive(module))) {
+    std::cout << "[VDV DEBUG] AddControlFlowCondition::CloneOpsPass::validateBlockIdsConsecutive FALLBACK"<< std::endl;
     CVPipeline::setFallbackAttr(module, CVPipeline::ERRCODE_FAILED);
     return;
   }
@@ -574,11 +581,13 @@ void CloneOpsPass::runOnOperation() {
     }
 
     if (failed(cloneOpsInMainLoop(op))) {
+      std::cout << "[VDV DEBUG] AddControlFlowCondition::CloneOpsPass::cloneOpsInMainLoop FALLBACK"<< std::endl;
       CVPipeline::setFallbackAttr(module, CVPipeline::ERRCODE_FAILED);
       return WalkResult::interrupt();
     }
 
     if (failed(cleanupClonedOpsInMainLoop(op))) {
+      std::cout << "[VDV DEBUG] AddControlFlowCondition::CloneOpsPass::cleanupClonedOpsInMainLoop FALLBACK"<< std::endl;
       CVPipeline::setFallbackAttr(module, CVPipeline::ERRCODE_FAILED);
       return WalkResult::interrupt();
     }
@@ -592,6 +601,7 @@ void CloneOpsPass::runOnOperation() {
 
   // Validate no cloned tensor ops remaining in VECTOR main_loop op
   if (failed(validateClonedOpsInVector(module))) {
+    std::cout << "[VDV DEBUG] AddControlFlowCondition::CloneOpsPass::validateClonedOpsInVector FALLBACK"<< std::endl;
     CVPipeline::setFallbackAttr(module, CVPipeline::ERRCODE_FAILED);
     return;
   }
