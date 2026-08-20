@@ -90,7 +90,6 @@ void AddDynamicCVPipelinePass::runOnOperation() {
   PassManager pm(&getContext(), moduleOp.getOperationName());
 
   pm.addPass(createPreCheckAvailablePass());
-  pm.addPass(createStandardizeOpPass());
   // Unroll the main loop once the compute blocks are planned but before the
   // dataflow is split, so that the inter core transfers, their sync flags and
   // the multi buffers below are planned for each unrolled copy separately.
@@ -101,6 +100,8 @@ void AddDynamicCVPipelinePass::runOnOperation() {
     unrollOptions.unrollFactor = this->mainLoopUnrollFactor;
     pm.addPass(createMainLoopUnrollPass(unrollOptions));
   }
+
+  pm.addPass(createStandardizeOpPass());
 
   pm.addPass(createPlanComputeBlockPass());
   pm.addPass(createComputeBlockOptPass());

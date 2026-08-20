@@ -47,6 +47,7 @@
 #include "ascend/include/DynamicCVPipeline/SplitDataflow/DataDependencyAnalysis.h"
 #include "ascend/include/DynamicCVPipeline/SplitDataflow/InterCoreTransferAndSync.h"
 #include "ascend/include/DynamicCVPipeline/SplitDataflow/MarkMainLoop.h"
+#include "ascend/include/DynamicCVPipeline/StandardizeOp.h"
 
 static constexpr const char *DEBUG_TYPE = "main-loop-unroll";
 #define DBGS() (llvm::dbgs() << '[' << DEBUG_TYPE << "] ")
@@ -106,6 +107,7 @@ FailureOr<llvm::DenseSet<int>> MainLoopUnrollPass::probeMainLoops(
   // once those transfers have been inserted.
   PassManager pm(&probeCtx, probe->getOperationName());
 
+  pm.addPass(createStandardizeOpPass());
   pm.addPass(createPlanComputeBlockPass());
   pm.addPass(createComputeBlockOptPass());
 
