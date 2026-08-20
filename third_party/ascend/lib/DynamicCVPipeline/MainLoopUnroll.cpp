@@ -26,12 +26,17 @@
 #include "llvm/ADT/ScopeExit.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/MemoryBuffer.h"
+#include "llvm/Support/SourceMgr.h"
 
 #include "mlir/Dialect/SCF/IR/SCF.h"
 #include "mlir/Dialect/SCF/Utils/Utils.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/Diagnostics.h"
 #include "mlir/Pass/PassManager.h"
+
+#include "mlir/Parser/Parser.h"
+#include "mlir/IR/MLIRContext.h"
+#include "mlir/Parser.h"
 
 #include "ascend/include/DynamicCVPipeline/Common/Utils.h"
 #include "ascend/include/DynamicCVPipeline/MainLoopUnroll.h"
@@ -89,23 +94,12 @@ FailureOr<llvm::DenseSet<int>> MainLoopUnrollPass::probeMainLoops(
   std::string moduleStr;
   {
     llvm::raw_string_ostream os(moduleStr);
-    module->print(os); // или module->print(os, OpPrintingFlags())
+    module->print(os);
   }
 
-  OwningOpRef<ModuleOp> probe;
-  {
-    // Создаём парсер из строки
-    auto source = llvm::SourceMgr();
-    source.AddNewSourceBuffer(
-        llvm::MemoryBuffer::getMemBuffer(moduleStr), 
-        llvm::SMLoc()
-    );
-    
-    // Парсим в новый контекст
-    probe = parseSourceFile<ModuleOp>(source, &probeCtx);
-    if (!probe) {
-      // Ошибка парсинга
-    }
+  auto probe = parseSourceString<ModuleOp>(moduleStr, &probeCtx);
+  if (!probe) {
+    return failure();
   }
 
   // These are the very passes SplitDataflow runs: the main loop is the loop
