@@ -105,16 +105,16 @@ void AddDynamicCVPipelinePass::runOnOperation() {
     pm.addPass(createMainLoopUnrollPass(unrollOptions));
   }
 
-  pm.addPass(createDebugPrintPass('Before SplitDataFlow Pass'));
+  pm.addPass(createDebugPrintPass("Before SplitDataFlow Pass"));
   pm.addPass(createSplitDataflowPass());
-  pm.addPass(createDebugPrintPass('After SplitDataFlow Pass'));
+  pm.addPass(createDebugPrintPass("After SplitDataFlow Pass"));
 
 
   pm.addPass(createAnalyzeDataFlowPass());
-  pm.addPass(createDebugPrintPass('After AnalyzeDataFlow Pass'));
+  pm.addPass(createDebugPrintPass("After AnalyzeDataFlow Pass"));
 
   pm.addPass(createAllocMultiCachePass());
-  pm.addPass(createDebugPrintPass('After AllocMultiCache Pass'));
+  pm.addPass(createDebugPrintPass("After AllocMultiCache Pass"));
 
   pm.addPass(createAddControlFlowConditionPass());
   pm.addPass(createSeparateMemoryFromComputePass());
