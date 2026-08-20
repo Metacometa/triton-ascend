@@ -25,6 +25,7 @@
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/ScopeExit.h"
 #include "llvm/Support/Debug.h"
+#include "llvm/Support/MemoryBuffer.h"
 
 #include "mlir/Dialect/SCF/IR/SCF.h"
 #include "mlir/Dialect/SCF/Utils/Utils.h"
@@ -80,7 +81,7 @@ FailureOr<llvm::DenseSet<int>> MainLoopUnrollPass::probeMainLoops(
     ModuleOp module) {
   MLIRContext probeCtx;
   probeCtx.allowUnregisteredDialects();
-  probeCtx.enableMultiThreading(false);
+  probeCtx.enableMultithreading(false);
 
   probeCtx.appendDialectRegistry(module.getContext()->getDialectRegistry());
   probeCtx.loadAllAvailableDialects();
@@ -94,20 +95,18 @@ FailureOr<llvm::DenseSet<int>> MainLoopUnrollPass::probeMainLoops(
   OwningOpRef<ModuleOp> probe;
   {
     // Создаём парсер из строки
-    auto source = mlir::SourceMgr();
+    auto source = llvm::SourceMgr();
     source.AddNewSourceBuffer(
         llvm::MemoryBuffer::getMemBuffer(moduleStr), 
         llvm::SMLoc()
     );
     
     // Парсим в новый контекст
-    probe = parseSourceFile<ModuleOp>(source, probeCtx.get());
+    probe = parseSourceFile<ModuleOp>(source, &probeCtx);
     if (!probe) {
       // Ошибка парсинга
     }
   }
-
-  auto destroyProbe = llvm::make_scope_exit([&]() { probe->destroy(); });
 
   // These are the very passes SplitDataflow runs: the main loop is the loop
   // that ends up carrying the inter core transfers, so it can only be found
@@ -135,7 +134,7 @@ FailureOr<llvm::DenseSet<int>> MainLoopUnrollPass::probeMainLoops(
   }
 
   llvm::DenseSet<int> mainLoopTags;
-  probe.walk([&](scf::ForOp forOp) {
+  probe->walk([&](scf::ForOp forOp) {
     if (!forOp->hasAttr(CVPipeline::kMainLoop)) {
       return;
     }
