@@ -34,6 +34,10 @@
 
 #include "ascend/include/DynamicCVPipeline/Common/Utils.h"
 #include "ascend/include/DynamicCVPipeline/MainLoopUnroll.h"
+
+#include "ascend/include/DynamicCVPipeline/PlanComputeBlockPass.h"
+#include "ascend/include/DynamicCVPipeline/ComputeBlockOptPass.h"
+
 #include "ascend/include/DynamicCVPipeline/SplitDataflow/AddBlockIdForControlOps.h"
 #include "ascend/include/DynamicCVPipeline/SplitDataflow/DataDependencyAnalysis.h"
 #include "ascend/include/DynamicCVPipeline/SplitDataflow/InterCoreTransferAndSync.h"
