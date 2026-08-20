@@ -47,8 +47,8 @@ void DebugPrintPass::runOnOperation() {
   ModuleOp module = getOperation();
   
   // Print the debug message if provided
-  if (!this.message.empty()) {
-    llvm::errs() << "\n[DebugPrint] " << this.message << "\n";
+  if (!this->message.empty()) {
+    llvm::errs() << "\n[DebugPrint] " << this->message << "\n";
   } else {
     llvm::errs() << "\n[DebugPrint]\n";
   }

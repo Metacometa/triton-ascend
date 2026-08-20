@@ -50,7 +50,7 @@ public:
   MLIR_DEFINE_EXPLICIT_INTERNAL_INLINE_TYPE_ID(DebugPrintPass)
 
   DebugPrintPass() = default;
-  explicit DebugPrintPass(const std::string &message) : message(msg) {}
+  explicit DebugPrintPass(const std::string &msg) : message(msg) {}
 
   // Run the pass
   void runOnOperation() override;
