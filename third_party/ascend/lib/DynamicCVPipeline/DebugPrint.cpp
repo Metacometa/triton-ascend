@@ -31,6 +31,7 @@
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/Diagnostics.h"
 #include "mlir/Pass/PassManager.h"
+#include "mlir/Pass/Pass.h"
 
 #include "ascend/include/DynamicCVPipeline/Common/Utils.h"
 #include "ascend/include/DynamicCVPipeline/DebugPrint.h"
@@ -41,8 +42,6 @@ static constexpr const char *DEBUG_TYPE = "debug-print";
 
 using namespace mlir;
 using namespace mlir::triton;
-
-namespace {
 
 void DebugPrintPass::runOnOperation() {
   ModuleOp module = getOperation();
@@ -61,8 +60,7 @@ void DebugPrintPass::runOnOperation() {
   llvm::errs() << "\n[End DebugPrint]\n";
 }
 
-} // namespace
-
-std::unique_ptr<OperationPass<ModuleOp>> createDebugPrintPass(const std::string &message) {
+std::unique_ptr<OperationPass<ModuleOp>> 
+mlir::triton::createDebugPrintPass(const std::string &message) {
   return std::make_unique<DebugPrintPass>(message);
 }
