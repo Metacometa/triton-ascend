@@ -85,15 +85,34 @@ FailureOr<llvm::DenseSet<int>> MainLoopUnrollPass::probeMainLoops(
   probeCtx.appendDialectRegistry(module.getContext()->getDialectRegistry());
   probeCtx.loadAllAvailableDialects();
 
-  ModuleOp probe(module->clone());
-  probe->setContext(&probeCtx);
+  std::string moduleStr;
+  {
+    llvm::raw_string_ostream os(moduleStr);
+    module->print(os); // или module->print(os, OpPrintingFlags())
+  }
+
+  OwningOpRef<ModuleOp> probe;
+  {
+    // Создаём парсер из строки
+    auto source = mlir::SourceMgr();
+    source.AddNewSourceBuffer(
+        llvm::MemoryBuffer::getMemBuffer(moduleStr), 
+        llvm::SMLoc()
+    );
+    
+    // Парсим в новый контекст
+    probe = parseSourceFile<ModuleOp>(source, probeCtx.get());
+    if (!probe) {
+      // Ошибка парсинга
+    }
+  }
+
   auto destroyProbe = llvm::make_scope_exit([&]() { probe->destroy(); });
 
   // These are the very passes SplitDataflow runs: the main loop is the loop
   // that ends up carrying the inter core transfers, so it can only be found
   // once those transfers have been inserted.
-  PassManager pm(module.getContext(), module.getOperationName());
-  pm.enableMultithreading(false);
+  PassManager pm(&probeCtx, probe->getOperationName());
 
   pm.addPass(createPlanComputeBlockPass());
   pm.addPass(createComputeBlockOptPass());
@@ -107,9 +126,9 @@ FailureOr<llvm::DenseSet<int>> MainLoopUnrollPass::probeMainLoops(
   // away, so they would only confuse; a failure is reported by the caller.
   bool probeFailed = false;
   {
-    ScopedDiagnosticHandler handler(module.getContext(),
+    ScopedDiagnosticHandler handler(&probeCtx,
                                     [](Diagnostic &) { return success(); });
-    probeFailed = failed(pm.run(probe)) || CVPipeline::hasFallbackAttr(probe);
+    probeFailed = failed(pm.run(*probe)) || CVPipeline::hasFallbackAttr(*probe);
   }
   if (probeFailed) {
     return failure();
