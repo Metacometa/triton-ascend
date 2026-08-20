@@ -232,8 +232,9 @@ void MainLoopUnrollPass::runOnOperation() {
     }
   }
 
-  llvm::errs() << "\n[After MainLoopUnroll Pass\n\n";
-  module.print(llvm::errs())
+  llvm::errs() << "\n[After MainLoopUnroll Pass\n";
+  module.print(llvm::errs());
+  llvm::errs() << "\n\n\n";
 }
 
 } // namespace
