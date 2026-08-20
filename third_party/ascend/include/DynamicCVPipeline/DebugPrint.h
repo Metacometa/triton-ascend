@@ -44,6 +44,34 @@
 
 namespace mlir {
 namespace triton {
+class DebugPrintPass
+    : public PassWrapper<DebugPrintPass, OperationPass<ModuleOp>> {
+public:
+  MLIR_DEFINE_EXPLICIT_INTERNAL_INLINE_TYPE_ID(DebugPrintPass)
+
+  DebugPrintPass() = default;
+  DebugPrintPass(const std::string &message)
+  {
+    message = message;
+  }
+
+  // Run the pass
+  void runOnOperation() override;
+
+  // Return the pass argument name
+  static constexpr ::llvm::StringRef getArgumentName() {
+    return "debug-print";
+  }
+  ::llvm::StringRef getArgument() const override { return "debug-print"; }
+  ::llvm::StringRef getDescription() const override {
+    return "Debug print pass";
+  }
+  ::llvm::StringRef getName() const override { return "DebugPrintPass"; }
+
+private:
+  std::string message;
+};
+
 /// Creates an instance of the DebugPrint pass.
 /// \param message The message to print when the pass runs.
 std::unique_ptr<OperationPass<ModuleOp>>

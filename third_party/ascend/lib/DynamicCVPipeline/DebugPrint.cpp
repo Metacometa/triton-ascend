@@ -48,8 +48,8 @@ void DebugPrintPass::runOnOperation() {
   ModuleOp module = getOperation();
   
   // Print the debug message if provided
-  if (!message.empty()) {
-    llvm::errs() << "\n[DebugPrint] " << message << "\n";
+  if (!this.message.empty()) {
+    llvm::errs() << "\n[DebugPrint] " << this.message << "\n";
   } else {
     llvm::errs() << "\n[DebugPrint]\n";
   }
@@ -63,7 +63,6 @@ void DebugPrintPass::runOnOperation() {
 
 } // namespace
 
-std::unique_ptr<OperationPass<ModuleOp>>
-mlir::triton::createDebugPrintPass(const std::string &message) {
+std::unique_ptr<OperationPass<ModuleOp>> createDebugPrintPass(const std::string &message) {
   return std::make_unique<DebugPrintPass>(message);
 }
