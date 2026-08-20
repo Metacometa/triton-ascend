@@ -154,6 +154,9 @@ void MainLoopUnrollPass::shiftBlockIds(Operation *root, int copyIdx,
 
 void MainLoopUnrollPass::runOnOperation() {
   ModuleOp module = getOperation();
+  llvm::errs() << "\n[Before MainLoopUnroll Pass\n";
+  module.print(llvm::errs());
+
   const int factor = this->unrollFactor;
 
   if (factor <= 1) {
@@ -228,6 +231,9 @@ void MainLoopUnrollPass::runOnOperation() {
                     blockIdStride);
     }
   }
+
+  llvm::errs() << "\n[After MainLoopUnroll Pass\n\n";
+  module.print(llvm::errs())
 }
 
 } // namespace
