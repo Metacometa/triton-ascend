@@ -58,10 +58,14 @@ class PreserveControlAttrsListener : public RewriterBase::Listener {
 public:
   void notifyOperationInserted(Operation *op, OpBuilder::InsertPoint) override {
     recentInserts.insert(op);
+      llvm::errs() << "\nOp Inserted: " << "\n" << *op << "\n";
+      llvm::errs() << "Attributes: " << op->getAttrs().size() << "\n\n";
   }
 
   void notifyOperationErased(Operation *op) override {
     recentInserts.remove(op);
+    llvm::errs() << "\nOp Erased: " << "\n" << *op << "\n";
+    llvm::errs() << "Attributes: " << op->getAttrs().size() << "\n\n";
   }
 
   void notifyOperationReplaced(Operation *op, Operation *newOp) override {
