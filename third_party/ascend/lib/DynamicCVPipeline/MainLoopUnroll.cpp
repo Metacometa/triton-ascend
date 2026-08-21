@@ -43,6 +43,7 @@
 #include "ascend/include/DynamicCVPipeline/SplitDataflow/DataDependencyAnalysis.h"
 #include "ascend/include/DynamicCVPipeline/SplitDataflow/InterCoreTransferAndSync.h"
 #include "ascend/include/DynamicCVPipeline/SplitDataflow/MarkMainLoop.h"
+#include "ascend/include/DynamicCVPipeline/Passes.h"
 
 static constexpr const char *DEBUG_TYPE = "main-loop-unroll";
 #define DBGS() (llvm::dbgs() << '[' << DEBUG_TYPE << "] ")
