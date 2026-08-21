@@ -75,7 +75,6 @@ public:
       transferAttrs(op, newOp);
       llvm::errs() << "\nOp replaced: " << *op << " -> " << *newOp << "\n";
       llvm::errs() << "Attributes: " << op->getAttrs().size() << "\n\n";
-  }
       return;
     }
   }
