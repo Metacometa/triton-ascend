@@ -66,11 +66,16 @@ public:
 
   void notifyOperationReplaced(Operation *op, Operation *newOp) override {
     transferAttrs(op, newOp);
+    llvm::errs() << "\nOp replaced: " << *op << " -> " << *newOp << "\n";
+    llvm::errs() << "Attributes: " << op->getAttrs().size() << "\n\n";
   }
 
   void notifyOperationReplaced(Operation *op, ValueRange values) override {
     if (Operation *newOp = findReplacementOp(op, values)) {
       transferAttrs(op, newOp);
+      llvm::errs() << "\nOp replaced: " << *op << " -> " << *newOp << "\n";
+      llvm::errs() << "Attributes: " << op->getAttrs().size() << "\n\n";
+  }
       return;
     }
   }
