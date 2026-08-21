@@ -42,6 +42,8 @@
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/Pass/Pass.h"
 
+#include "llvm/Support/Debug.h"
+
 namespace mlir {
 namespace triton {
 class DebugPrintPass

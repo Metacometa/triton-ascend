@@ -39,6 +39,8 @@
 #include "ascend/include/DynamicCVPipeline/SeparateMemoryFromComputePass.h"
 #include "ascend/include/DynamicCVPipeline/SplitDataflowPass.h"
 #include "ascend/include/DynamicCVPipeline/StandardizeOp.h"
+#include "ascend/include/DynamicCVPipeline/DebugPrint.h"
+
 
 #include <iostream>
 
@@ -89,10 +91,9 @@ void AddDynamicCVPipelinePass::runOnOperation() {
   ModuleOp moduleBackup(moduleOp->clone());
   PassManager pm(&getContext(), moduleOp.getOperationName());
 
-  // Unroll the main loop once the compute blocks are planned but before the
-  // dataflow is split, so that the inter core transfers, their sync flags and
-  // the multi buffers below are planned for each unrolled copy separately.
-  // The pass is a no-op unless a factor > 1 was requested.
+  pm.addPass(createDebugPrintPass("Before PreCheckAvailable Pass"));
+  pm.addPass(createPreCheckAvailablePass());
+
   if (this-> mainLoopUnrollFactor > 1)
   { 
     MainLoopUnrollOptions unrollOptions;
@@ -100,8 +101,9 @@ void AddDynamicCVPipelinePass::runOnOperation() {
     pm.addPass(createMainLoopUnrollPass(unrollOptions));
   }
 
-  pm.addPass(createPreCheckAvailablePass());
   pm.addPass(createStandardizeOpPass());
+  pm.addPass(createDebugPrintPass("After StandardizeOp Pass"));
+  
   pm.addPass(createPlanComputeBlockPass());
   pm.addPass(createComputeBlockOptPass());
   pm.addPass(createSplitDataflowPass());
