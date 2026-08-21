@@ -29,7 +29,6 @@
 
 #include "mlir/Pass/PassManager.h"
 
-#include "ascend/include/DynamicCVPipeline/DebugPrint.h"
 
 #include <iostream>
 
@@ -51,7 +50,6 @@ void ComputeBlockOptPass::runOnOperation() {
      location and divide the computation blocks.
    */
 
-  pm.addPass(createDebugPrintPass("Before UnifyAllocBlock Pass"));
   pm.addPass(createUnifyAllocBlockPass());
   pm.addPass(createReorderOpsByBlockIdPass());
 
@@ -69,7 +67,6 @@ void ComputeBlockOptPass::runOnOperation() {
 
   pm.addPass(createFixpipeOptPass());
   pm.addPass(createReorderOpsByBlockIdPass());
-  pm.addPass(createDebugPrintPass("Before ReorderOpsByBlock Pass"));
 
 
   if (failed(runPipeline(pm, module))) {

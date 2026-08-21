@@ -25,7 +25,6 @@
 #include "ascend/include/DynamicCVPipeline/PlanComputeBlockPass.h"
 #include "mlir/Pass/PassManager.h"
 
-#include "ascend/include/DynamicCVPipeline/DebugPrint.h"
 #include "DynamicCVPipeline/PlanComputeBlock/Passes.h"
 #include "DynamicCVPipeline/PlanComputeBlock/PlanCubeBlockPass.h"
 #include "DynamicCVPipeline/PlanComputeBlock/ReorderOpsByBlockId.h"
@@ -54,10 +53,8 @@ void PlanComputeBlockPass::runOnOperation() {
   OpPassManager pm(module.getOperationName());
   LOG_DEBUG("Enter pass.\n");
 
-  pm.addPass(createDebugPrintPass("Before OpClassifier Pass"));
   // Step 1: Run OpClassifierPass to classify operations
   pm.addPass(createOpClassifierPass());
-  pm.addPass(createDebugPrintPass("After OpClassifier Pass"));
 
   // Step 2: Partition compute blocks for core_type=cube
   pm.addPass(createPlanCubeBlockPass());
@@ -66,9 +63,7 @@ void PlanComputeBlockPass::runOnOperation() {
   pm.addPass(createPlanVectorBlockPass());
 
   // Step 4: Reorder
-  pm.addPass(createDebugPrintPass("Before ReorderOpsByBlockId Pass"));
   pm.addPass(createReorderOpsByBlockIdPass());
-  pm.addPass(createDebugPrintPass("After ReorderOpsByBlockId Pass"));
 
   if (failed(runPipeline(pm, module))) {
     if (!CVPipeline::hasFallbackAttr(module)) {
