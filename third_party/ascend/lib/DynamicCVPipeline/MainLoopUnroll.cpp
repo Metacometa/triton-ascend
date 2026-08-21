@@ -32,6 +32,11 @@
 #include "mlir/IR/Diagnostics.h"
 #include "mlir/Pass/PassManager.h"
 
+#include "ascend/include/DynamicCVPipeline/PreCheckAvailable.h"
+#include "ascend/include/DynamicCVPipeline/StandardizeOp.h"
+#include "ascend/include/DynamicCVPipeline/PlanComputeBlock/Passes.h"
+#include "ascend/include/DynamicCVPipeline/PlanComputeBlockPass.h"
+
 #include "ascend/include/DynamicCVPipeline/Common/Utils.h"
 #include "ascend/include/DynamicCVPipeline/MainLoopUnroll.h"
 #include "ascend/include/DynamicCVPipeline/SplitDataflow/AddBlockIdForControlOps.h"
