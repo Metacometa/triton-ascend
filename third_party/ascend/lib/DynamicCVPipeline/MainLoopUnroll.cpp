@@ -80,16 +80,33 @@ private:
 
 FailureOr<llvm::DenseSet<int>> MainLoopUnrollPass::probeMainLoops(
     ModuleOp module) {
-  ModuleOp probe(module->clone());
-  auto destroyProbe = llvm::make_scope_exit([&]() { probe->destroy(); });
+  MLIRContext probeCtx;
+  probeCtx.allowUnregisteredDialects();
+  probeCtx.enableMultithreading(false);
+
+  probeCtx.appendDialectRegistry(module.getContext()->getDialectRegistry());
+  probeCtx.loadAllAvailableDialects();
+
+  std::string moduleStr;
+  {
+    llvm::raw_string_ostream os(moduleStr);
+    module->print(os);
+  }
+
+  auto probe = parseSourceString<ModuleOp>(moduleStr, &probeCtx);
+  if (!probe) {
+    return failure();
+  }
 
   // These are the very passes SplitDataflow runs: the main loop is the loop
   // that ends up carrying the inter core transfers, so it can only be found
   // once those transfers have been inserted.
-  PassManager pm(module.getContext(), module.getOperationName());
+  PassManager pm(&probeCtx, probe->getOperationName());
+
   pm.addPass(createStandardizeOpPass());
   pm.addPass(createPlanComputeBlockPass());
   pm.addPass(createComputeBlockOptPass());
+
   pm.addPass(createAddBlockIdForControlOpsPass());
   pm.addPass(createDataDependencyAnalysisPass());
   pm.addPass(createInterCoreTransferAndSyncPass());
@@ -99,16 +116,16 @@ FailureOr<llvm::DenseSet<int>> MainLoopUnrollPass::probeMainLoops(
   // away, so they would only confuse; a failure is reported by the caller.
   bool probeFailed = false;
   {
-    ScopedDiagnosticHandler handler(module.getContext(),
+    ScopedDiagnosticHandler handler(&probeCtx,
                                     [](Diagnostic &) { return success(); });
-    probeFailed = failed(pm.run(probe)) || CVPipeline::hasFallbackAttr(probe);
+    probeFailed = failed(pm.run(*probe)) || CVPipeline::hasFallbackAttr(*probe);
   }
   if (probeFailed) {
     return failure();
   }
 
   llvm::DenseSet<int> mainLoopTags;
-  probe.walk([&](scf::ForOp forOp) {
+  probe->walk([&](scf::ForOp forOp) {
     if (!forOp->hasAttr(CVPipeline::kMainLoop)) {
       return;
     }

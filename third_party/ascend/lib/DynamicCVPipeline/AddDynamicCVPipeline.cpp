@@ -91,7 +91,6 @@ void AddDynamicCVPipelinePass::runOnOperation() {
   ModuleOp moduleBackup(moduleOp->clone());
   PassManager pm(&getContext(), moduleOp.getOperationName());
 
-  pm.addPass(createDebugPrintPass("Before PreCheckAvailable Pass"));
   pm.addPass(createPreCheckAvailablePass());
 
   if (this-> mainLoopUnrollFactor > 1)
@@ -101,9 +100,7 @@ void AddDynamicCVPipelinePass::runOnOperation() {
     pm.addPass(createMainLoopUnrollPass(unrollOptions));
   }
 
-  pm.addPass(createStandardizeOpPass());
-  pm.addPass(createDebugPrintPass("After StandardizeOp Pass"));
-  
+  pm.addPass(createStandardizeOpPass());  
   pm.addPass(createPlanComputeBlockPass());
   pm.addPass(createComputeBlockOptPass());
   pm.addPass(createSplitDataflowPass());
