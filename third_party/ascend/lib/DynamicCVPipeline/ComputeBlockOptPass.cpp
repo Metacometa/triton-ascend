@@ -29,6 +29,8 @@
 
 #include "mlir/Pass/PassManager.h"
 
+#include "ascend/include/DynamicCVPipeline/DebugPrint.h"
+
 #include <iostream>
 
 using namespace mlir;
@@ -48,6 +50,8 @@ void ComputeBlockOptPass::runOnOperation() {
      unified block. Then, use UBUsageOpt to find the smallest UB dependency
      location and divide the computation blocks.
    */
+
+  pm.addPass(createDebugPrintPass("Before UnifyAllocBlock Pass"));
   pm.addPass(createUnifyAllocBlockPass());
   pm.addPass(createReorderOpsByBlockIdPass());
 
@@ -65,6 +69,8 @@ void ComputeBlockOptPass::runOnOperation() {
 
   pm.addPass(createFixpipeOptPass());
   pm.addPass(createReorderOpsByBlockIdPass());
+  pm.addPass(createDebugPrintPass("Before ReorderOpsByBlock Pass"));
+
 
   if (failed(runPipeline(pm, module))) {
     if (!CVPipeline::hasFallbackAttr(module)) {
